@@ -3,21 +3,17 @@ from pandasql import sqldf
 
 total_df = pd.read_csv("US-2016-primary.csv", sep=";")
 
-state_county_breakdown = sqldf('''
-SELECT *, votes/fraction_votes AS "total_county_votes"
-FROM total_df 
-''')
+#add up all votes in whole df for each state
+total_df['total_votes_state'] = total_df.groupby('state')['votes'].transform('sum')
 
-state_totals = sqldf('''                               
-SELECT state_abbreviation, SUM(total_county_votes) AS "total_state_votes"
-FROM state_county_breakdown
-GROUP BY state_abbreviation
-''')
+#filter for one candidate
+candidate_name = "Donald Trump"
+candidate_df = total_df[total_df['candidate'] == candidate_name]
+#add up votes in each state for that candidate
+candidate_df['candidate_votes_state'] = candidate_df.groupby('state')['votes'].transform('sum')
+#calculate fraction of votes for that candidate in each state
+candidate_df['candidate_state_fraction'] = candidate_df['candidate_votes_state'] / candidate_df['total_votes_state']
+#drop duplicates to have one row per state
+candidate_df = candidate_df.drop_duplicates(subset=['state', 'state_abbreviation', 'total_votes_state', 'candidate_votes_state', 'candidate_state_fraction']).reset_index(drop=True)
 
-state_county_breakdown = sqldf('''
-SELECT b.*, t.total_state_votes, b.total_county_votes/t.total_state_votes AS county_weighting
-FROM state_county_breakdown b
-LEFT JOIN state_totals t ON b.state_abbreviation = t.state_abbreviation
-''')
-
-print(state_county_breakdown)
+print(candidate_df)
