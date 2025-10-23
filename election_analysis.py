@@ -1,5 +1,5 @@
 import pandas as pd
-from pandasql import sqldf
+import matplotlib.pyplot as plt 
 
 total_df = pd.read_csv("US-2016-primary.csv", sep=";")
 
@@ -16,4 +16,14 @@ candidate_df['candidate_state_fraction'] = candidate_df['candidate_votes_state']
 #drop duplicates to have one row per state
 candidate_df = candidate_df.drop_duplicates(subset=['state', 'state_abbreviation', 'total_votes_state', 'candidate_votes_state', 'candidate_state_fraction']).reset_index(drop=True)
 
-print(candidate_df)
+#creating bar chart
+x_axis = candidate_df['state_abbreviation']
+y_axis = candidate_df['candidate_state_fraction']*100
+
+plt.figure(figsize=(15,6))
+plt.bar(x_axis, y_axis)
+plt.title(f'Votes for {candidate_name} by State')
+plt.xlabel('State')
+plt.ylabel('Percentage of Votes')
+plt.xticks(rotation=90)
+plt.show()
