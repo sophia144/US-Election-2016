@@ -1,4 +1,5 @@
 import pandas as pd
+from pandasql import sqldf
 import matplotlib.pyplot as plt 
 
 total_df = pd.read_csv("US-2016-primary.csv", sep=";")
@@ -7,7 +8,7 @@ total_df = pd.read_csv("US-2016-primary.csv", sep=";")
 total_df['total_votes_state'] = total_df.groupby('state')['votes'].transform('sum')
 
 #filter for one candidate
-candidate_name = "Donald Trump"
+candidate_name = "Hillary Clinton"
 candidate_df = total_df[total_df['candidate'] == candidate_name]
 #add up votes in each state for that candidate
 candidate_df['candidate_votes_state'] = candidate_df.groupby('state')['votes'].transform('sum')
@@ -16,6 +17,8 @@ candidate_df['candidate_state_fraction'] = candidate_df['candidate_votes_state']
 #drop duplicates to have one row per state
 candidate_df = candidate_df.drop_duplicates(subset=['state', 'state_abbreviation', 'total_votes_state', 'candidate_votes_state', 'candidate_state_fraction']).reset_index(drop=True)
 
+#sort by fraction of votes
+candidate_df.sort_values(by=['candidate_state_fraction'], ascending=False, inplace=True)
 #creating bar chart
 x_axis = candidate_df['state_abbreviation']
 y_axis = candidate_df['candidate_state_fraction']*100
